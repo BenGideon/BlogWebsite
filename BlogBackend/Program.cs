@@ -1,4 +1,5 @@
 using BlogBackend.Data;
+using BlogBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 var app = builder.Build();
 

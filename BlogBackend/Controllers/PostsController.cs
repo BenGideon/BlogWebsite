@@ -1,7 +1,6 @@
-using BlogBackend.Data;
-using BlogBackend.Models;
+using BlogBackend.DTOs.Posts;
+using BlogBackend.Services;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 
 namespace BlogBackend.Controllers;
 
@@ -9,30 +8,24 @@ namespace BlogBackend.Controllers;
 [Route("api/[controller]")]
 public class PostsController : ControllerBase
 {
-    private readonly MongoDbContext _dbContext;
+    private readonly IPostService _postService;
 
-    public PostsController(MongoDbContext dbContext)
+    public PostsController(IPostService postService)
     {
-        _dbContext = dbContext;
+        _postService = postService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Post>>> GetPosts()
+    public async Task<ActionResult<List<PostResponseDto>>> GetPosts()
     {
-        var posts = await _dbContext.Posts
-            .Find(_ => true)
-            .SortByDescending(post => post.CreatedAt)
-            .ToListAsync();
-
+        var posts = await _postService.GetAllAsync();
         return Ok(posts);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Post>> GetPostById(string id)
+    public async Task<ActionResult<PostResponseDto>> GetPostById(string id)
     {
-        var post = await _dbContext.Posts
-            .Find(post => post.Id == id)
-            .FirstOrDefaultAsync();
+        var post = await _postService.GetByIdAsync(id);
 
         if (post is null)
         {
@@ -43,33 +36,21 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Post>> CreatePost(Post post)
+    public async Task<ActionResult<PostResponseDto>> CreatePost(CreatePostRequestDto request)
     {
-        post.CreatedAt = DateTime.UtcNow;
-        post.UpdatedAt = DateTime.UtcNow;
-
-        await _dbContext.Posts.InsertOneAsync(post);
-
+        var post = await _postService.CreateAsync(request);
         return CreatedAtAction(nameof(GetPostById), new { id = post.Id }, post);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Post>> UpdatePost(string id, Post updatedPost)
+    public async Task<ActionResult<PostResponseDto>> UpdatePost(string id, UpdatePostRequestDto request)
     {
-        var existingPost = await _dbContext.Posts
-            .Find(post => post.Id == id)
-            .FirstOrDefaultAsync();
+        var updatedPost = await _postService.UpdateAsync(id, request);
 
-        if (existingPost is null)
+        if (updatedPost is null)
         {
             return NotFound();
         }
-
-        updatedPost.Id = existingPost.Id;
-        updatedPost.CreatedAt = existingPost.CreatedAt;
-        updatedPost.UpdatedAt = DateTime.UtcNow;
-
-        await _dbContext.Posts.ReplaceOneAsync(post => post.Id == id, updatedPost);
 
         return Ok(updatedPost);
     }
@@ -77,9 +58,9 @@ public class PostsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletePost(string id)
     {
-        var result = await _dbContext.Posts.DeleteOneAsync(post => post.Id == id);
+        var deleted = await _postService.DeleteAsync(id);
 
-        if (result.DeletedCount == 0)
+        if (!deleted)
         {
             return NotFound();
         }

@@ -36,3 +36,4 @@
 /Users/bengideondokiburra/All Git Clones/Bolg Site/BlogBackend/bin/Debug/net9.0/SharpCompress.dll
 /Users/bengideondokiburra/All Git Clones/Bolg Site/BlogBackend/bin/Debug/net9.0/Snappier.dll
 /Users/bengideondokiburra/All Git Clones/Bolg Site/BlogBackend/bin/Debug/net9.0/ZstdSharp.dll
+/Users/bengideondokiburra/All Git Clones/Bolg Site/BlogBackend/obj/Debug/net9.0/BlogBackend.sourcelink.json
