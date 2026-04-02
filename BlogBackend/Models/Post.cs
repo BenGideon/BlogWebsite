@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace BlogBackend.Models;
 
+[BsonIgnoreExtraElements]
 public class Post
 {
     [BsonId]
@@ -18,9 +19,6 @@ public class Post
     [BsonElement("authorId")]
     [BsonRepresentation(BsonType.ObjectId)]
     public string AuthorId { get; set; } = string.Empty;
-
-    [BsonElement("publishedAt")]
-    public DateTime? PublishedAt { get; set; }
 
     [BsonElement("createdAt")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

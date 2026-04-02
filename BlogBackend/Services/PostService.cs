@@ -40,7 +40,6 @@ public class PostService : IPostService
             Title = request.Title,
             Content = request.Content,
             AuthorId = request.AuthorId,
-            PublishedAt = request.PublishedAt,
             FeaturedImage = request.FeaturedImage,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -65,7 +64,6 @@ public class PostService : IPostService
         existingPost.Title = request.Title;
         existingPost.Content = request.Content;
         existingPost.AuthorId = request.AuthorId;
-        existingPost.PublishedAt = request.PublishedAt;
         existingPost.FeaturedImage = request.FeaturedImage;
         existingPost.UpdatedAt = DateTime.UtcNow;
 
@@ -88,7 +86,6 @@ public class PostService : IPostService
             Title = post.Title,
             Content = post.Content,
             AuthorId = post.AuthorId,
-            PublishedAt = post.PublishedAt,
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
             FeaturedImage = post.FeaturedImage

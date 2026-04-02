@@ -13,7 +13,5 @@ public class UpdatePostRequestDto
     [Required]
     public string AuthorId { get; set; } = string.Empty;
 
-    public DateTime? PublishedAt { get; set; }
-
     public string? FeaturedImage { get; set; }
 }
