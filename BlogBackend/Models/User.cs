@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace BlogBackend.Models;
 
+[BsonIgnoreExtraElements]
 public class User
 {
     [BsonId]
