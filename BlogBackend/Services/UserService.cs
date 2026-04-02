@@ -1,6 +1,7 @@
 using BlogBackend.Data;
 using BlogBackend.DTOs.Users;
 using BlogBackend.Models;
+using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 
 namespace BlogBackend.Services;
@@ -8,10 +9,12 @@ namespace BlogBackend.Services;
 public class UserService : IUserService
 {
     private readonly MongoDbContext _dbContext;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public UserService(MongoDbContext dbContext)
+    public UserService(MongoDbContext dbContext, IPasswordHasher<User> passwordHasher)
     {
         _dbContext = dbContext;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<List<UserResponseDto>> GetAllAsync()
@@ -39,11 +42,12 @@ public class UserService : IUserService
         {
             Username = request.Username,
             Email = request.Email,
-            PasswordHash = request.Password,
             Role = request.Role,
             Profile = MapProfile(request.Profile),
             CreatedAt = DateTime.UtcNow
         };
+
+        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         await _dbContext.Users.InsertOneAsync(user);
 
