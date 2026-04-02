@@ -9,6 +9,4 @@ public class CreatePostRequestDto
 
     [Required]
     public string Content { get; set; } = string.Empty;
-
-    public string? FeaturedImage { get; set; }
 }

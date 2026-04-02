@@ -25,7 +25,4 @@ public class Post
 
     [BsonElement("updatedAt")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    [BsonElement("featuredImage")]
-    public string? FeaturedImage { get; set; }
 }

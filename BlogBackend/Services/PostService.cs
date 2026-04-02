@@ -1,5 +1,6 @@
 using BlogBackend.Data;
 using BlogBackend.DTOs.Posts;
+using BlogBackend.DTOs.Users;
 using BlogBackend.Models;
 using MongoDB.Driver;
 
@@ -21,7 +22,11 @@ public class PostService : IPostService
             .SortByDescending(post => post.CreatedAt)
             .ToListAsync();
 
-        return posts.Select(MapToResponse).ToList();
+        var authorMap = await BuildAuthorMapAsync(posts.Select(post => post.AuthorId));
+
+        return posts
+            .Select(post => MapToResponse(post, authorMap.GetValueOrDefault(post.AuthorId)))
+            .ToList();
     }
 
     public async Task<PostResponseDto?> GetByIdAsync(string id)
@@ -30,7 +35,13 @@ public class PostService : IPostService
             .Find(post => post.Id == id)
             .FirstOrDefaultAsync();
 
-        return post is null ? null : MapToResponse(post);
+        if (post is null)
+        {
+            return null;
+        }
+
+        var authorMap = await BuildAuthorMapAsync([post.AuthorId]);
+        return MapToResponse(post, authorMap.GetValueOrDefault(post.AuthorId));
     }
 
     public async Task<PostResponseDto> CreateAsync(CreatePostRequestDto request, string authorId)
@@ -40,14 +51,14 @@ public class PostService : IPostService
             Title = request.Title,
             Content = request.Content,
             AuthorId = authorId,
-            FeaturedImage = request.FeaturedImage,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         await _dbContext.Posts.InsertOneAsync(post);
 
-        return MapToResponse(post);
+        var authorMap = await BuildAuthorMapAsync([post.AuthorId]);
+        return MapToResponse(post, authorMap.GetValueOrDefault(post.AuthorId));
     }
 
     public async Task<PostResponseDto?> UpdateAsync(string id, UpdatePostRequestDto request)
@@ -63,12 +74,12 @@ public class PostService : IPostService
 
         existingPost.Title = request.Title;
         existingPost.Content = request.Content;
-        existingPost.FeaturedImage = request.FeaturedImage;
         existingPost.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.Posts.ReplaceOneAsync(post => post.Id == id, existingPost);
 
-        return MapToResponse(existingPost);
+        var authorMap = await BuildAuthorMapAsync([existingPost.AuthorId]);
+        return MapToResponse(existingPost, authorMap.GetValueOrDefault(existingPost.AuthorId));
     }
 
     public async Task<bool> DeleteAsync(string id)
@@ -77,7 +88,26 @@ public class PostService : IPostService
         return result.DeletedCount > 0;
     }
 
-    private static PostResponseDto MapToResponse(Post post)
+    private async Task<Dictionary<string, UserSummaryDto>> BuildAuthorMapAsync(IEnumerable<string> authorIds)
+    {
+        var uniqueAuthorIds = authorIds
+            .Where(authorId => !string.IsNullOrWhiteSpace(authorId))
+            .Distinct()
+            .ToList();
+
+        if (uniqueAuthorIds.Count == 0)
+        {
+            return [];
+        }
+
+        var users = await _dbContext.Users
+            .Find(user => uniqueAuthorIds.Contains(user.Id))
+            .ToListAsync();
+
+        return users.ToDictionary(user => user.Id, MapUserSummary);
+    }
+
+    private static PostResponseDto MapToResponse(Post post, UserSummaryDto? author)
     {
         return new PostResponseDto
         {
@@ -85,9 +115,21 @@ public class PostService : IPostService
             Title = post.Title,
             Content = post.Content,
             AuthorId = post.AuthorId,
+            Author = author,
             CreatedAt = post.CreatedAt,
-            UpdatedAt = post.UpdatedAt,
-            FeaturedImage = post.FeaturedImage
+            UpdatedAt = post.UpdatedAt
+        };
+    }
+
+    private static UserSummaryDto MapUserSummary(User user)
+    {
+        var displayName = $"{user.Profile.FirstName} {user.Profile.LastName}".Trim();
+
+        return new UserSummaryDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName
         };
     }
 }

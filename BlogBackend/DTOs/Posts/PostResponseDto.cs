@@ -1,3 +1,5 @@
+using BlogBackend.DTOs.Users;
+
 namespace BlogBackend.DTOs.Posts;
 
 public class PostResponseDto
@@ -10,9 +12,9 @@ public class PostResponseDto
 
     public string AuthorId { get; set; } = string.Empty;
 
+    public UserSummaryDto? Author { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
-
-    public string? FeaturedImage { get; set; }
 }
