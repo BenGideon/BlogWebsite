@@ -33,12 +33,12 @@ public class CommentService : ICommentService
         return comment is null ? null : MapToResponse(comment);
     }
 
-    public async Task<CommentResponseDto> CreateAsync(CreateCommentRequestDto request)
+    public async Task<CommentResponseDto> CreateAsync(CreateCommentRequestDto request, string authorId)
     {
         var comment = new Comment
         {
             PostId = request.PostId,
-            AuthorId = request.AuthorId,
+            AuthorId = authorId,
             Content = request.Content,
             ParentId = request.ParentId,
             CreatedAt = DateTime.UtcNow

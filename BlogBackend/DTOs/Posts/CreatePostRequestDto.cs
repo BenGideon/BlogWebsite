@@ -10,8 +10,5 @@ public class CreatePostRequestDto
     [Required]
     public string Content { get; set; } = string.Empty;
 
-    [Required]
-    public string AuthorId { get; set; } = string.Empty;
-
     public string? FeaturedImage { get; set; }
 }

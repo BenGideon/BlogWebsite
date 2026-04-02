@@ -6,7 +6,7 @@ public interface ICommentService
 {
     Task<List<CommentResponseDto>> GetAllAsync();
     Task<CommentResponseDto?> GetByIdAsync(string id);
-    Task<CommentResponseDto> CreateAsync(CreateCommentRequestDto request);
+    Task<CommentResponseDto> CreateAsync(CreateCommentRequestDto request, string authorId);
     Task<CommentResponseDto?> UpdateAsync(string id, UpdateCommentRequestDto request);
     Task<bool> DeleteAsync(string id);
 }

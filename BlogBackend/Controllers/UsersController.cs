@@ -1,9 +1,12 @@
 using BlogBackend.DTOs.Users;
 using BlogBackend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BlogBackend.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -15,6 +18,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
+    [Authorize(Roles = "admin")]
     [HttpGet]
     public async Task<ActionResult<List<UserResponseDto>>> GetUsers()
     {
@@ -25,6 +29,11 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<UserResponseDto>> GetUserById(string id)
     {
+        if (!CanAccessUser(id))
+        {
+            return Forbid();
+        }
+
         var user = await _userService.GetByIdAsync(id);
 
         if (user is null)
@@ -35,6 +44,7 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
+    [Authorize(Roles = "admin")]
     [HttpPost]
     public async Task<ActionResult<UserResponseDto>> CreateUser(CreateUserRequestDto request)
     {
@@ -45,6 +55,11 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<UserResponseDto>> UpdateUser(string id, UpdateUserRequestDto request)
     {
+        if (!CanAccessUser(id))
+        {
+            return Forbid();
+        }
+
         var updatedUser = await _userService.UpdateAsync(id, request);
 
         if (updatedUser is null)
@@ -58,6 +73,11 @@ public class UsersController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(string id)
     {
+        if (!CanAccessUser(id))
+        {
+            return Forbid();
+        }
+
         var deleted = await _userService.DeleteAsync(id);
 
         if (!deleted)
@@ -66,5 +86,13 @@ public class UsersController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    private bool CanAccessUser(string userId)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return currentUserId is not null &&
+               (currentUserId == userId || User.IsInRole("admin"));
     }
 }

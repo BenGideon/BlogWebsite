@@ -33,13 +33,13 @@ public class PostService : IPostService
         return post is null ? null : MapToResponse(post);
     }
 
-    public async Task<PostResponseDto> CreateAsync(CreatePostRequestDto request)
+    public async Task<PostResponseDto> CreateAsync(CreatePostRequestDto request, string authorId)
     {
         var post = new Post
         {
             Title = request.Title,
             Content = request.Content,
-            AuthorId = request.AuthorId,
+            AuthorId = authorId,
             FeaturedImage = request.FeaturedImage,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -63,7 +63,6 @@ public class PostService : IPostService
 
         existingPost.Title = request.Title;
         existingPost.Content = request.Content;
-        existingPost.AuthorId = request.AuthorId;
         existingPost.FeaturedImage = request.FeaturedImage;
         existingPost.UpdatedAt = DateTime.UtcNow;
 
